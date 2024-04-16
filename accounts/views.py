@@ -3,6 +3,7 @@ from django.contrib import messages
 
 from accounts.forms import UserForm
 from accounts.models import User
+from vendor.forms import VendorForm
 
 
 # Create your views here.
@@ -37,3 +38,23 @@ def register_user(request):
         "form": form,
     }
     return render(request, "accounts/register_user.html", context)
+
+
+def register_vendor(request):
+    if request.method == "POST":
+        # STORE THE DATA AND CREATE USER
+        form = UserForm(request.POST)
+        v_form = VendorForm(request.POST, request.FILES)
+        if form.is_valid() and v_form.is_valid():
+            pass
+        else:
+            print(form.errors)
+            print(v_form.errors)
+    else:
+        form = UserForm()
+        v_form = VendorForm()
+    context = {
+        "form": form,
+        "v_form": v_form,
+    }
+    return render(request, "accounts/register_vendor.html", context)
