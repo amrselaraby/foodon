@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 
 from accounts.forms import UserForm
-from accounts.models import User
+from accounts.models import User, UserProfile
 from vendor.forms import VendorForm
 
 
@@ -46,10 +46,26 @@ def register_vendor(request):
         form = UserForm(request.POST)
         v_form = VendorForm(request.POST, request.FILES)
         if form.is_valid() and v_form.is_valid():
-            pass
+            # Create the user using create_user method from User model
+            user_attributes = {**form.cleaned_data}
+            del user_attributes["phone_number"]
+            del user_attributes["confirm_password"]
+            user = User.objects.create_user(**user_attributes)
+            user.role = User.Vendor
+            user.save()
+            vendor = v_form.save(commit=False)
+            vendor.user = user
+            user_profile = UserProfile.objects.get(user=user)
+            vendor.user_profile = user_profile
+            vendor.save()
+            messages.success(
+                request,
+                "Your account has been registered successfully! Please wait for the approval",
+            )
+            return redirect("register-vendor")
         else:
+            print("invalid form")
             print(form.errors)
-            print(v_form.errors)
     else:
         form = UserForm()
         v_form = VendorForm()
